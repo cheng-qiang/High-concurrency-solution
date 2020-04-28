@@ -116,9 +116,27 @@ public class RedisService {
     }
 
     /**
+     * 删除
+     * @param prefix
+     * @param key
+     * @return
+     */
+    public boolean delete(KeyPrefix prefix,String key){
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            String real_key = prefix.getPrefix()+key;
+            Long del = jedis.del(real_key);
+            return del>0;
+        }finally {
+            returnToPool(jedis);
+        }
+    }
+
+    /**
      * 对象 --> 字符串
      * */
-    private <T> String beanToString(T value) {
+    public static  <T> String beanToString(T value) {
         if (value == null){
             return null;
         }
@@ -137,7 +155,7 @@ public class RedisService {
     /**
      * 字符串 --> 对象
      * */
-    private <T> T stringToBean(String str,Class<T> clazz) {
+    public static  <T> T stringToBean(String str,Class<T> clazz) {
         if (str == null || str.length() <= 0 || clazz == null){
             return null;
         }

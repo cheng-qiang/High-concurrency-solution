@@ -1,4 +1,4 @@
-package com.chen.concurrency.model;
+package com.chen.concurrency.model.dao;
 
 import lombok.Data;
 

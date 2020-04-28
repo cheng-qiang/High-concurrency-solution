@@ -1,6 +1,6 @@
 package com.chen.concurrency.config.web.resolver;
 
-import com.chen.concurrency.model.MiaoshaUser;
+import com.chen.concurrency.model.dao.MiaoshaUser;
 import com.chen.concurrency.service.MiaoshaUserService;
 import com.chen.concurrency.vo.Constants;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +49,9 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     private String getCookieValue(HttpServletRequest request, String cookieTokenName) {
         Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length <=0){
+            return null;
+        }
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(cookieTokenName)){
                 return cookie.getValue();

@@ -1,4 +1,4 @@
-package com.chen.concurrency.model;
+package com.chen.concurrency.config.redis.key.impl;
 
 import com.chen.concurrency.config.redis.key.BasePrefix;
 

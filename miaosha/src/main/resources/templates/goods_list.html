@@ -3,8 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>商品列表</title>
+    <!--jquery-->
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+    <!--bootstrap-->
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/4.4.1-1/css/bootstrap.min.css}">
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js}"></script>
+    <!--jquery-validate-->
+    <script type="text/javascript" th:src="@{/webjars/jquery-validation/1.19.0/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/jquery-validation/1.19.0/localization/messages_zh.min.js}"></script>
+    <!--layer-->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!--MD5-->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!--common-->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
 </head>
 <body>
 <p th:text="'hello:'+${user.nickname}"></p>
+    <div class="panel panel-default">
+        <div class="panel-heading">秒杀商品列表</div>
+        <table class="table" id="goodslist">
+            <tr>
+                <td>商品名称</td>
+                <td>商品图片</td>
+                <td>商品原价</td>
+                <td>秒杀价</td>
+                <td>库存数量</td>
+                <td>详情</td>
+            </tr>
+            <tr th:each="goods,goodsStat:${goodsList}">
+                <td th:text="${goods.goods_name}"></td>
+                <td><img th:src="@{${goods.goods_img}}" width="200"></td>
+                <td th:text="${goods.goods_price}"></td>
+                <td th:text="${goods.miaosha_price}"></td>
+                <td th:text="${goods.stock_count}"></td>
+                <!--Thymeleaf如何拼接href-->
+                <td><a th:href="@{'/system/goods/to_detail/'+${goods.id}}">详情</a></td>
+            </tr>
+        </table>
+    </div>
+
 </body>
 </html>

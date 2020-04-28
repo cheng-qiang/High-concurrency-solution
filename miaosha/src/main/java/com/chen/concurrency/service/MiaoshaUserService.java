@@ -5,7 +5,7 @@ import com.chen.concurrency.config.redis.key.impl.MiaoshaUserKey;
 import com.chen.concurrency.exception.GlobalException;
 import com.chen.concurrency.mapper.MiaoshaUserMapper;
 import com.chen.concurrency.model.CodeMsg;
-import com.chen.concurrency.model.MiaoshaUser;
+import com.chen.concurrency.model.dao.MiaoshaUser;
 import com.chen.concurrency.util.Md5_util;
 import com.chen.concurrency.util.UUID_util;
 import com.chen.concurrency.vo.Constants;
@@ -31,8 +31,45 @@ public class MiaoshaUserService {
     @Autowired
     private RedisService redisService;
 
+    /**
+     * 对象缓存
+     * @param id
+     * @return
+     */
     public MiaoshaUser getById(Long id){
-        return miaoshaUserMapper.getById(id);
+        MiaoshaUser user = redisService.get(MiaoshaUserKey.getUserByID, "" + id, MiaoshaUser.class);
+        if (user != null){
+            return user;
+        }
+        user = miaoshaUserMapper.getById(id);
+        if (user != null){
+            redisService.set(MiaoshaUserKey.getUserByID, ""+id, user);
+        }
+        return user;
+    }
+
+    /**
+     * 对象缓存时注意处理缓存
+     * @param token
+     * @param id
+     * @param formPass
+     * @return
+     */
+    public boolean updatePassword(String token,long id,String formPass){
+        MiaoshaUser user = getById(id);
+        if (user == null){
+            throw new GlobalException(CodeMsg.MOBILE_NOT_EXITS);
+        }
+        //更新数据库
+        MiaoshaUser updateUser = new MiaoshaUser();
+        updateUser.setId(id);
+        updateUser.setPassword(Md5_util.formPassToDBPass(formPass, user.getSalt()));
+        miaoshaUserMapper.updateUserPassword(updateUser);
+        //处理缓存
+        redisService.delete(MiaoshaUserKey.getUserByID, ""+id);
+        user.setPassword(updateUser.getPassword());
+        redisService.set(MiaoshaUserKey.token, token, user);
+        return true;
     }
 
     public Boolean Login(HttpServletResponse response,LoginVo loginVo) {
@@ -54,12 +91,12 @@ public class MiaoshaUserService {
             throw new GlobalException(CodeMsg.PASSWORD_ERROR);
         }
         //生成cookie
-        addCookie(response,user);
+        String token = UUID_util.uuid();
+        addCookie(response,token,user);
         return true;
     }
 
-    private void addCookie(HttpServletResponse response,MiaoshaUser user){
-        String token = UUID_util.uuid();
+    private void addCookie(HttpServletResponse response,String token,MiaoshaUser user){
         redisService.set(MiaoshaUserKey.token,token,user);
         Cookie cookie = new Cookie(Constants.COOKIE_TOKEN_NAME, token);
         cookie.setMaxAge(MiaoshaUserKey.token.expireSeconds());
@@ -72,8 +109,9 @@ public class MiaoshaUserService {
             return null;
         }
         MiaoshaUser user = redisService.get(MiaoshaUserKey.token, token, MiaoshaUser.class);
+        //延长有效期
         if (user!=null){
-            addCookie(response,user);
+            addCookie(response,token,user);
         }
         return user;
     }

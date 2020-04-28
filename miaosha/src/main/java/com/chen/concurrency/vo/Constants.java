@@ -11,4 +11,6 @@ public interface Constants {
     String COOKIE_TOKEN_NAME = "token";
     /**设置cookie的有效时间*/
     int TOKEN_EXPIRE = 3600*24*2;
+    /**设置页面缓存有效时间*/
+    int PAGE_EXPIRE = 60;
 }
